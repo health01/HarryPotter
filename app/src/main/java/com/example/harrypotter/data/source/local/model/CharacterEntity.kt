@@ -1,9 +1,10 @@
 package com.example.harrypotter.data.source.local.model
 
-import androidx.compose.ui.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "characters")
 data class CharacterEntity(
     @PrimaryKey val name: String,
@@ -14,4 +15,4 @@ data class CharacterEntity(
     val dateOfBirth: String?,
     val imageUrl: String?,
     val status: String // "Alive" or "Deceased"
-)
+) : java.io.Serializable

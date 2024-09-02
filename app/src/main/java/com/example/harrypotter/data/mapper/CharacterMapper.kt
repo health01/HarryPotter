@@ -30,7 +30,7 @@ class CharacterMapper @Inject constructor() {
 
     }
 
-    private fun getHouseColor(house: String?): Color {
+    fun getHouseColor(house: String?): Color {
         return when (house) {
             "Gryffindor" -> GryffindorColor
             "Slytherin" -> SlytherinColor
@@ -40,7 +40,7 @@ class CharacterMapper @Inject constructor() {
         }
     }
 
-    private fun formatDate(date: String?): String? {
+    fun formatDate(date: String?): String? {
         return date?.let {
             try {
                 val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())

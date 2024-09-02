@@ -13,11 +13,20 @@ interface CharacterDao {
 
     // Query to get all characters
     @Query("SELECT * FROM characters")
-     fun getAllCharacters(): Flow<List<CharacterEntity>>
+    fun getAllCharacters(): Flow<List<CharacterEntity>>
 
     // Query to get characters by house
     @Query("SELECT * FROM characters WHERE house = :house")
-     fun getCharactersByHouse(house: String): Flow<List<CharacterEntity>>
+    fun getCharactersByHouse(house: String): Flow<List<CharacterEntity>>
+
+    @Query(
+        """
+    SELECT * FROM characters
+    WHERE LOWER(name) LIKE '%' || LOWER(:searchQuery) || '%'
+    OR LOWER(actor) LIKE '%' || LOWER(:searchQuery) || '%'
+"""
+    )
+    fun searchCharacters(searchQuery: String): Flow<List<CharacterEntity>>
 
     // Insert or update a list of characters
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -28,7 +37,7 @@ interface CharacterDao {
     suspend fun deleteAllCharacters()
 
     @Transaction
-    suspend fun updateCoins(characterEntity: List<CharacterEntity>) {
+    suspend fun updateCharacters(characterEntity: List<CharacterEntity>) {
         deleteAllCharacters()
         insertAll(characterEntity)
     }

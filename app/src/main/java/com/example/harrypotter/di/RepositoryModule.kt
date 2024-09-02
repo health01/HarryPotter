@@ -23,12 +23,14 @@ object RepositoryModule {
         characterDao: CharacterDao,
         characterMapper: CharacterMapper,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        @MainDispatcher mainDispatcher: CoroutineDispatcher,
     ): CharacterRepository {
         return CharacterRepositoryImpl(
             harryPotterApiService = harryPotterApiService,
             characterDao = characterDao,
             characterMapper = characterMapper,
-            ioDispatcher = ioDispatcher
+            ioDispatcher = ioDispatcher,
+            mainDispatcher = mainDispatcher
         )
     }
 }
