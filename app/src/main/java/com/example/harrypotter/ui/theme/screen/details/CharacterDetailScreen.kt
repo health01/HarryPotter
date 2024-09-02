@@ -161,3 +161,9 @@ fun CharacterDetailScreenPreview() {
 
     CharacterDetailContent(mockCharacter)
 }
+
+@Preview(showBackground = true, fontScale = 2f)
+@Composable
+fun CharacterDetailScreenWithFontScalePreview() {
+    CharacterDetailScreenPreview()
+}
