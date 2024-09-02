@@ -10,6 +10,7 @@ import com.example.harrypotter.data.source.local.model.CharacterEntity
 import com.example.harrypotter.domain.usecase.home.FetchAndCacheCharactersUseCase
 import com.example.harrypotter.domain.usecase.home.GetCachedCharactersUseCase
 import com.example.harrypotter.domain.usecase.home.SearchCachedCharactersUseCase
+import com.example.harrypotter.domain.usecase.home.SearchCharactersUseCase
 import com.example.harrypotter.util.NetworkMonitor
 import com.example.harrypotter.util.Results
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +32,7 @@ class HomeViewModel @Inject constructor(
     private val getCachedCharactersUseCase: GetCachedCharactersUseCase,
     private val fetchAndCacheCharactersUseCase: FetchAndCacheCharactersUseCase,
     private val searchCachedCharactersUseCase: SearchCachedCharactersUseCase,
+    private val searchCharactersUseCase: SearchCharactersUseCase,
     private val networkMonitor: NetworkMonitor
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUIState())
@@ -71,18 +73,10 @@ class HomeViewModel @Inject constructor(
         searchJob = viewModelScope.launch {
             if (networkMonitor.isNetworkConnected()) {
                 // Filter the characters in the current UI state
-                val filteredCharacters = originalCharacters.filter {
-                    it.name.contains(query, ignoreCase = true) ||
-                            it.actor.contains(query, ignoreCase = true)
-                }
+                searchCharactersUseCase(query, originalCharacters).onEach { results ->
+                    handleResult(results)
+                }.launchIn(this)
 
-                _uiState.update {
-                    it.copy(
-                        characters = filteredCharacters.toPersistentList(),
-                        isLoading = false,
-                        errorMessage = null
-                    )
-                }
             } else {
                 // Use the cached search use case
                 searchCachedCharactersUseCase(query)
@@ -93,7 +87,6 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-
 
     private fun handleResult(result: Results<List<CharacterEntity>>) {
         _uiState.update { currentState ->

@@ -14,6 +14,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,57 +62,64 @@ fun HomeScreenContent(
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    Box(modifier = Modifier.fillMaxSize()) {
+        // SnackbarHost should be part of the UI hierarchy
+        SnackbarHost(
+            hostState = snackBarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+        SearchBar(
+            query = searchQuery,
+            onQueryChange = onSearchQueryChange,
+            onSearch = { keyboardController?.hide() },
+            active = true,
+            enabled = true,
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
+            onActiveChange = {},
+            placeholder = {
+                Text(text = stringResource(R.string.search_by_name_or_actor))
 
-    SearchBar(
-        query = searchQuery,
-        onQueryChange = onSearchQueryChange,
-        onSearch = { keyboardController?.hide() },
-        active = true,
-        enabled = true,
-        leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
-        onActiveChange = {},
-        placeholder = {
-            Text(text = stringResource(R.string.search_by_name_or_actor))
 
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
 
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-
-        when {
-            uiState.isLoading -> {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                    )
-                }
-            }
-
-            uiState.errorMessage != null -> {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LaunchedEffect(uiState.errorMessage) {
-                        snackBarHostState.showSnackbar(
-                            message = uiState.errorMessage,
-                            duration = SnackbarDuration.Short
+            when {
+                uiState.isLoading -> {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.Center)
                         )
-
                     }
-                    Text(
-                        text = uiState.errorMessage ?: "",
-                        color = Color.Red,
-                        modifier = Modifier.align(Alignment.Center)
+
+                }
+
+                uiState.errorMessage != null -> {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LaunchedEffect(uiState.errorMessage) {
+                            snackBarHostState.showSnackbar(
+                                message = uiState.errorMessage,
+                                duration = SnackbarDuration.Short
+                            )
+
+                        }
+                        Text(
+                            text = uiState.errorMessage ?: "",
+                            color = Color.Red,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
+
+                else -> {
+                    CharacterList(
+                        characters = uiState.characters,
+                        onNavigationRequested = onNavigationRequested
                     )
                 }
-            }
-
-            else -> {
-                CharacterList(
-                    characters = uiState.characters,
-                    onNavigationRequested = onNavigationRequested
-                )
             }
         }
     }

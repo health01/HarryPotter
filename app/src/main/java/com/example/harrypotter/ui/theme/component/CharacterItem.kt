@@ -20,9 +20,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.harrypotter.R
 import com.example.harrypotter.data.source.local.model.CharacterEntity
 import com.example.harrypotter.ui.theme.GryffindorColor
 import com.example.harrypotter.ui.theme.SlytherinColor
@@ -40,6 +42,8 @@ fun CharacterItem(character: CharacterEntity, onClick: () -> Unit = {}) {
             model = character.imageUrl,
             contentDescription = "${character.name}'s image",
             contentScale = ContentScale.Crop,
+            placeholder = painterResource(R.drawable.ic_launcher_foreground),
+            error = painterResource(R.drawable.ic_launcher_foreground),
             modifier = Modifier
                 .size(100.dp)
                 .clip(RoundedCornerShape(percent = 20))
@@ -52,11 +56,7 @@ fun CharacterItem(character: CharacterEntity, onClick: () -> Unit = {}) {
             Text(text = character.name, color = Color.White)
             Text(text = "Actor: ${character.actor}", color = Color.White)
             Text(text = "Species: ${character.species}", color = Color.White)
-            Text(text = "Status: ${character.status}", color = Color.White)
             Text(text = "imageUrl: ${character.imageUrl}", color = Color.White)
-            character.dateOfBirth?.let {
-                Text(text = "Date of Birth: $it", color = Color.White)
-            }
         }
     }
 }

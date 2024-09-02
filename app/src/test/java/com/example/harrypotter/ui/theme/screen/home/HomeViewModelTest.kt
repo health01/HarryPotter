@@ -5,6 +5,7 @@ import com.example.harrypotter.data.repository.util.MainDispatcherRule
 import com.example.harrypotter.domain.usecase.home.FetchAndCacheCharactersUseCase
 import com.example.harrypotter.domain.usecase.home.GetCachedCharactersUseCase
 import com.example.harrypotter.domain.usecase.home.SearchCachedCharactersUseCase
+import com.example.harrypotter.domain.usecase.home.SearchCharactersUseCase
 import com.example.harrypotter.util.NetworkMonitor
 import com.example.harrypotter.util.Results
 import io.mockk.MockKAnnotations
@@ -39,6 +40,9 @@ class HomeViewModelTest : BasicTesting() {
     private lateinit var searchCachedCharactersUseCase: SearchCachedCharactersUseCase
 
     @RelaxedMockK
+    private lateinit var searchCharactersUseCase: SearchCharactersUseCase
+
+    @RelaxedMockK
     private lateinit var networkMonitor: NetworkMonitor
 
     @Before
@@ -48,6 +52,7 @@ class HomeViewModelTest : BasicTesting() {
             getCachedCharactersUseCase = getCachedCharactersUseCase,
             fetchAndCacheCharactersUseCase = fetchAndCacheCharactersUseCase,
             searchCachedCharactersUseCase = searchCachedCharactersUseCase,
+            searchCharactersUseCase = searchCharactersUseCase,
             networkMonitor = networkMonitor
         )
     }
