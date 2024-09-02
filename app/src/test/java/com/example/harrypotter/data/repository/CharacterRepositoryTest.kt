@@ -4,11 +4,8 @@ import com.example.harrypotter.BasicTesting
 import com.example.harrypotter.data.mapper.CharacterMapper
 import com.example.harrypotter.data.repository.util.MainDispatcherRule
 import com.example.harrypotter.data.source.local.dao.CharacterDao
-import com.example.harrypotter.data.source.local.model.CharacterEntity
 import com.example.harrypotter.data.source.remote.HarryPotterApiService
 import com.example.harrypotter.data.source.remote.model.CharacterApiModel
-import com.example.harrypotter.data.source.remote.model.CharacterItemAPIModel
-import com.example.harrypotter.data.source.remote.model.Wand
 import com.example.harrypotter.util.Results
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery

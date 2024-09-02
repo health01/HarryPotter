@@ -43,9 +43,11 @@ class CharacterMapper @Inject constructor() {
     fun formatDate(date: String?): String? {
         return date?.let {
             try {
-                val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                val inputPattern = "dd-MM-yyyy"
+                val outputPattern = "dd MMM yyyy"
+                val sdf = SimpleDateFormat(inputPattern, Locale.getDefault())
                 val parsedDate = sdf.parse(it)
-                val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                val outputFormat = SimpleDateFormat(outputPattern, Locale.getDefault())
                 outputFormat.format(parsedDate!!)
             } catch (e: Exception) {
                 null
