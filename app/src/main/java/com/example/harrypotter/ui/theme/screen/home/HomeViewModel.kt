@@ -40,6 +40,7 @@ class HomeViewModel @Inject constructor(
         private set
 
     private var searchJob: Job? = null
+    var originalCharacters: List<CharacterEntity> = emptyList()
 
 
     init {
@@ -57,7 +58,38 @@ class HomeViewModel @Inject constructor(
             }
 
             useCase.collect { result ->
+                if (result is Results.Success) {
+                    originalCharacters = result.data // Save the original data
+                }
                 handleResult(result)
+            }
+        }
+    }
+
+    fun searchCharacters(query: String) {
+        _uiState.update { it.copy(isLoading = true) }
+        searchJob = viewModelScope.launch {
+            if (networkMonitor.isNetworkConnected()) {
+                // Filter the characters in the current UI state
+                val filteredCharacters = originalCharacters.filter {
+                    it.name.contains(query, ignoreCase = true) ||
+                            it.actor.contains(query, ignoreCase = true)
+                }
+
+                _uiState.update {
+                    it.copy(
+                        characters = filteredCharacters.toPersistentList(),
+                        isLoading = false,
+                        errorMessage = null
+                    )
+                }
+            } else {
+                // Use the cached search use case
+                searchCachedCharactersUseCase(query)
+                    .onEach { result ->
+                        handleResult(result)
+                    }
+                    .launchIn(this)
             }
         }
     }
@@ -92,14 +124,7 @@ class HomeViewModel @Inject constructor(
             .onEach { query ->
                 searchJob?.cancel()
                 if (query.isNotBlank()) {
-                    _uiState.update { it.copy(isLoading = true) }
-                    searchJob = viewModelScope.launch {
-                        searchCachedCharactersUseCase(query)
-                            .onEach { result ->
-                                handleResult(result)
-                            }
-                            .launchIn(this)
-                    }
+                    searchCharacters(query)
                 } else {
                     // If query is empty, fetch all characters again
                     getCharacters()
