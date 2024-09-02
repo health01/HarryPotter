@@ -9,7 +9,6 @@ import com.example.harrypotter.util.NetworkMonitor
 import com.example.harrypotter.util.Results
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.unmockkAll
 import junit.framework.TestCase.assertEquals
@@ -22,6 +21,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+
 
 class HomeViewModelTest : BasicTesting() {
     @get:Rule
@@ -48,7 +48,7 @@ class HomeViewModelTest : BasicTesting() {
             getCachedCharactersUseCase = getCachedCharactersUseCase,
             fetchAndCacheCharactersUseCase = fetchAndCacheCharactersUseCase,
             searchCachedCharactersUseCase = searchCachedCharactersUseCase,
-            networkMonitor
+            networkMonitor = networkMonitor
         )
     }
 
@@ -63,13 +63,15 @@ class HomeViewModelTest : BasicTesting() {
         coEvery { networkMonitor.isNetworkConnected() } returns true
         coEvery { fetchAndCacheCharactersUseCase() } returns flowOf(Results.Success(emptyList()))
 
+        // When
         val initialQuery = viewModel.searchQuery
+
+        // Then
         assertTrue(initialQuery.isEmpty())
     }
 
-
     @Test
-    fun `getCharacters should use fetchAndCacheCharactersUseCase when network is connected`() =
+    fun `getCharacters should fetch from network and update originalCharacters when network is connected`() =
         runTest {
             // Given
             coEvery { networkMonitor.isNetworkConnected() } returns true
@@ -77,16 +79,18 @@ class HomeViewModelTest : BasicTesting() {
 
             // When
             viewModel.getCharacters()
+            mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
 
             // Then
             val uiState = viewModel.uiState.value
             assertFalse(uiState.isLoading)
             assertEquals(mockEntities, uiState.characters)
+            assertEquals(mockEntities, viewModel.originalCharacters)
             assertNull(uiState.errorMessage)
         }
 
     @Test
-    fun `getCharacters should use getCachedCharactersUseCase when network is disconnected`() =
+    fun `getCharacters should fetch from cache and update originalCharacters when network is disconnected`() =
         runTest {
             // Given
             coEvery { networkMonitor.isNetworkConnected() } returns false
@@ -100,15 +104,15 @@ class HomeViewModelTest : BasicTesting() {
             val uiState = viewModel.uiState.value
             assertFalse(uiState.isLoading)
             assertEquals(mockEntities, uiState.characters)
+            assertEquals(mockEntities, viewModel.originalCharacters)
             assertNull(uiState.errorMessage)
         }
 
     @Test
-    fun `getCharacters should handle error result correctly`() = runTest {
+    fun `getCharacters should handle error and not update originalCharacters`() = runTest {
         // Given
         val errorMessage = "Unable to fetch character details"
-        coEvery { networkMonitor.isNetworkConnected() } answers { true }
-        every { networkMonitor.isNetworkConnected() } answers { true }
+        coEvery { networkMonitor.isNetworkConnected() } returns true
         coEvery { fetchAndCacheCharactersUseCase() } returns flowOf(Results.Error(errorMessage))
 
         // When
@@ -118,20 +122,40 @@ class HomeViewModelTest : BasicTesting() {
         // Then
         val uiState = viewModel.uiState.value
         assertFalse(uiState.isLoading)
-        assertEquals(uiState.characters.size, 0)
+        assertEquals(0, uiState.characters.size)
+        assertEquals(0, viewModel.originalCharacters.size)
         assertEquals(errorMessage, uiState.errorMessage)
     }
 
     @Test
-    fun `onSearchQueryChanged should trigger search when query is not blank`() = runTest {
+    fun `searchCharacters should filter characters when online`() = runTest {
         // Given
         val query = "Harry"
         coEvery { networkMonitor.isNetworkConnected() } returns true
-        coEvery { searchCachedCharactersUseCase(query) } returns flowOf(Results.Success(mockEntities))
+        coEvery { fetchAndCacheCharactersUseCase() } returns flowOf(Results.Success(mockEntities))
 
         // When
-        viewModel.onSearchQueryChanged(query)
-        viewModel.initializeSearch()
+        viewModel.searchCharacters(query)
+        mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        val uiState = viewModel.uiState.value
+        assertFalse(uiState.isLoading)
+        assertEquals(1, uiState.characters.size)
+        assertEquals("Harry Potter", uiState.characters.first().name)
+        assertNull(uiState.errorMessage)
+    }
+
+
+    @Test
+    fun `searchCharacters should invoke searchCachedCharactersUseCase when offline`() = runTest {
+        // Given
+        val query = "Harry"
+        coEvery { networkMonitor.isNetworkConnected() } returns false
+        coEvery { getCachedCharactersUseCase() } returns flowOf(Results.Success(mockEntities))
+
+        // When
+        viewModel.searchCharacters(query)
         mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
@@ -142,20 +166,108 @@ class HomeViewModelTest : BasicTesting() {
     }
 
     @Test
-    fun `onSearchQueryChanged should reload characters when query is blank`() = runTest {
+    fun `searchCharacters should handle error when offline`() = runTest {
         // Given
-        coEvery { networkMonitor.isNetworkConnected() } returns true
-        coEvery { fetchAndCacheCharactersUseCase() } returns flowOf(Results.Success(mockEntities))
+        val query = "Harry"
+        val errorMessage = "Error fetching cached data"
+        coEvery { networkMonitor.isNetworkConnected() } returns false
+        coEvery { getCachedCharactersUseCase() } returns flowOf(Results.Error(errorMessage))
 
         // When
-        viewModel.onSearchQueryChanged("")
-        viewModel.initializeSearch()
+        viewModel.searchCharacters(query)
         mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
         val uiState = viewModel.uiState.value
         assertFalse(uiState.isLoading)
-        assertEquals(mockEntities, uiState.characters)
-        assertNull(uiState.errorMessage)
+        assertTrue(uiState.characters.isEmpty())
+        assertEquals(errorMessage, uiState.errorMessage)
     }
+
+    @Test
+    fun `onSearchQueryChanged should trigger search when query is not blank when network is connected`() =
+        runTest {
+            // Given
+            val query = "Harry"
+            coEvery { networkMonitor.isNetworkConnected() } returns true
+            coEvery { fetchAndCacheCharactersUseCase() } returns flowOf(Results.Success(mockEntities))
+
+            // When
+            viewModel.getCharacters()
+            viewModel.initializeSearch()
+            viewModel.onSearchQueryChanged(query)
+            mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
+
+            // Then
+            val uiState = viewModel.uiState.value
+            assertFalse(uiState.isLoading)
+            assertEquals(mockEntities, uiState.characters)
+            assertNull(uiState.errorMessage)
+        }
+
+    @Test
+    fun `onSearchQueryChanged should trigger search when query is not blank when network is disconnected`() =
+        runTest {
+            // Given
+            val query = "Harry"
+            coEvery { networkMonitor.isNetworkConnected() } returns false
+            coEvery { searchCachedCharactersUseCase(query) } returns flowOf(
+                Results.Success(
+                    mockEntities
+                )
+            )
+            coEvery { getCachedCharactersUseCase() } returns flowOf(Results.Success(mockEntities))
+
+            // When
+            viewModel.getCharacters()
+            viewModel.initializeSearch()
+            viewModel.onSearchQueryChanged(query)
+            mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
+
+            // Then
+            val uiState = viewModel.uiState.value
+            assertFalse(uiState.isLoading)
+            assertEquals(mockEntities, uiState.characters)
+            assertNull(uiState.errorMessage)
+        }
+
+    @Test
+    fun `onSearchQueryChanged should reload characters when query is blank is connected`() =
+        runTest {
+            // Given
+            coEvery { networkMonitor.isNetworkConnected() } returns true
+            coEvery { fetchAndCacheCharactersUseCase() } returns flowOf(Results.Success(mockEntities))
+
+            // When
+            viewModel.onSearchQueryChanged("")
+            viewModel.initializeSearch()
+            mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
+
+            // Then
+            val uiState = viewModel.uiState.value
+            assertFalse(uiState.isLoading)
+            assertEquals(mockEntities, uiState.characters)
+            assertNull(uiState.errorMessage)
+        }
+
+    @Test
+    fun `onSearchQueryChanged should reload characters when query is blank is disconnected`() =
+        runTest {
+            // Given
+            coEvery { networkMonitor.isNetworkConnected() } returns false
+            coEvery { getCachedCharactersUseCase() } returns flowOf(Results.Success(mockEntities))
+
+            // When
+            viewModel.onSearchQueryChanged("")
+            viewModel.initializeSearch()
+            mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
+
+            // Then
+            val uiState = viewModel.uiState.value
+            assertFalse(uiState.isLoading)
+            assertEquals(mockEntities, uiState.characters)
+            assertNull(uiState.errorMessage)
+        }
+
+
 }
