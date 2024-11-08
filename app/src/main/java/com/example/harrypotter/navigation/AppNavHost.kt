@@ -2,6 +2,7 @@ package com.example.harrypotter.navigation
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.os.Build
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
@@ -17,7 +18,6 @@ import com.example.harrypotter.ui.theme.screen.details.CharacterDetailContent
 import com.example.harrypotter.ui.theme.screen.home.HomeScreen
 import com.google.gson.Gson
 
-@SuppressLint("NewApi")
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController()
@@ -48,11 +48,17 @@ fun AppNavHost(
             exitTransition = { fadeOut(animationSpec = tween(500)) }
 
         ) { backStackEntry ->
-            val character =
+            val character = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Use Bundle#getSerializable for API level 33 and above
                 backStackEntry.arguments?.getSerializable(
                     CharDetail.charArg,
                     CharacterEntity::class.java
                 )
+            } else {
+                backStackEntry.arguments?.getSerializable(
+                    CharDetail.charArg
+                ) as? CharacterEntity
+            }
 
             CharacterDetailContent(character)
         }

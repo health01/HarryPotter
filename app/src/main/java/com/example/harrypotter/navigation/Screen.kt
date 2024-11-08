@@ -27,7 +27,16 @@ object CharDetail : Screen {
 class AssetParamType : NavType<CharacterEntity>(isNullableAllowed = false) {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun get(bundle: Bundle, key: String): CharacterEntity? {
-        return bundle.getSerializable(key, CharacterEntity::class.java)
+//        return bundle.getSerializable(key, CharacterEntity::class.java)
+        val myObject: CharacterEntity?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Use Bundle#getSerializable for API level 33 and above
+            myObject = bundle.getSerializable(key, CharacterEntity::class.java)
+        } else {
+            myObject = bundle.getSerializable(key) as? CharacterEntity
+        }
+
+        return myObject
     }
 
     override fun parseValue(value: String): CharacterEntity {
