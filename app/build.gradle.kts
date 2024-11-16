@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.jetbrainsKotlinKapt)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.daggerHilt)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -71,8 +71,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation(libs.daggerHilt)
-    kapt(libs.daggerHiltKapt)
+    ksp(libs.daggerHilt)
+    ksp(libs.daggerHiltCompiler)
+    ksp(libs.androidx.room.compiler)
 
     implementation("androidx.compose.animation:animation:1.1.0")
     implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
@@ -85,7 +86,6 @@ dependencies {
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
 
     // Coil
     implementation(libs.coil.compose)
