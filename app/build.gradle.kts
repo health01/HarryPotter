@@ -18,6 +18,7 @@ android {
         versionName = libs.versions.app.version.name.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments["clearPackageData"] = "true"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -49,6 +50,13 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
 }
 
@@ -103,4 +111,13 @@ dependencies {
     implementation(libs.daggerHilt)
     implementation(libs.hilt.navigation.compose)
     ksp(libs.daggerHiltCompiler)
+
+    // UI Testing
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestUtil(libs.androidx.test.orchestrator)
+
+    // Robolectric for unit tests that require Android framework
+    testImplementation(libs.robolectric)
 }
