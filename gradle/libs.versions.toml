@@ -16,6 +16,20 @@ navigation-compose = "2.7.7"
 coil = "2.6.0"
 kotlinx-collections-immutable = "0.3.7"
 kotlinx-serialization-json = "1.6.3"
+app-version-code = "1"
+app-version-name = "1.0"
+compile-sdk = "34"
+min-sdk = "28"
+target-sdk = "34"
+jdk = "17"
+kotlin-compiler-extension = "1.5.7"
+compose-animation = "1.1.0"
+hilt-navigation = "1.2.0"
+retrofit = "2.9.0"
+okhttp = "5.0.0-alpha.14"
+mockk = "1.13.9"
+coroutines-test = "1.6.4"
+arch-core-testing = "2.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +58,14 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 daggerHilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "dagger" }
 daggerHiltCompiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "compose-animation" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt-navigation" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines-test" }
+arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "arch-core-testing" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
