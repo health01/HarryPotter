@@ -120,4 +120,10 @@ dependencies {
 
     // Robolectric for unit tests that require Android framework
     testImplementation(libs.robolectric)
+
+    // Hilt Testing
+    androidTestImplementation(libs.daggerHilt)
+    kspAndroidTest(libs.daggerHiltCompiler)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.runner)
 }

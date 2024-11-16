@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -78,12 +79,11 @@ fun HomeScreenContent(
             onActiveChange = {},
             placeholder = {
                 Text(text = stringResource(R.string.search_by_name_or_actor))
-
-
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
+                .testTag("SearchBar")
         ) {
 
             when {
@@ -92,6 +92,7 @@ fun HomeScreenContent(
                         CircularProgressIndicator(
                             modifier = Modifier
                                 .align(Alignment.Center)
+                                .testTag("LoadingIndicator")
                         )
                     }
 
